@@ -1,0 +1,63 @@
+{
+    "manifest_version": 3,
+    "name": "DCInfo",
+    "version": "1.0.1",
+    "author": "jasmin",
+    "description": "디시인사이드 작성자 IP·ID 정보 표시 및 목록 편의 기능",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "dcinfo@dcinfo.local",
+            "strict_min_version": "140.0",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
+        },
+        "gecko_android": {
+            "strict_min_version": "142.0"
+        }
+    },
+    "icons": {
+        "16": "icon/icon_16.png",
+        "32": "icon/icon_32.png",
+        "48": "icon/icon_48.png",
+        "128": "icon/icon_128.png"
+    },
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "action": {
+        "default_icon": {
+            "16": "icon/icon_16.png",
+            "32": "icon/icon_32.png"
+        },
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://gall.dcinside.com/*"],
+            "run_at": "document_start",
+            "js": [
+                "lib/jquery-3.5.1.js",
+                "hidpi.js",
+                "data.js",
+                "core.js",
+                "ip.js",
+                "block.js",
+                "writer.js",
+                "memo.js",
+                "native-popup.js",
+                "refresh.js",
+                "main.js"
+            ],
+            "css": ["styles.css"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["image/*"],
+            "matches": ["*://gall.dcinside.com/*"]
+        }
+    ],
+    "permissions": ["storage"],
+    "host_permissions": ["*://gall.dcinside.com/*"]
+}

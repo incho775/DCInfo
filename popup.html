@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <style>
+        :root {
+            --text-primary: #1c1c1e;
+            --text-secondary: #6e6e73;
+            --accent: linear-gradient(135deg, #7a86dd 0%, #505aa0 100%);
+            --accent-solid: #505aa0;
+            --accent-glow: rgba(80, 90, 160, 0.4);
+
+            --glass-bg: rgba(255, 255, 255, 0.42);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --card-shadow: 0 12px 38px rgba(31, 38, 95, 0.2);
+            --rim-top: rgba(255, 255, 255, 0.9);
+            --rim-edge: rgba(255, 255, 255, 0.35);
+            --rim-bottom: rgba(120, 130, 200, 0.2);
+            --specular: rgba(255, 255, 255, 0.5);
+
+            --row-divider: rgba(60, 60, 67, 0.1);
+            --row-hover: rgba(120, 130, 200, 0.1);
+            --track-off: rgba(120, 120, 128, 0.24);
+            --switch-border: rgba(0, 0, 0, 0.06);
+            --control-bg: rgba(255, 255, 255, 0.5);
+
+            --body-bg: linear-gradient(165deg, #e9edff 0%, #f4f2ff 42%, #fdfbff 100%);
+            --blob-1: rgba(120, 134, 221, 0.6);
+            --blob-2: rgba(176, 142, 234, 0.48);
+            --blob-3: rgba(126, 196, 232, 0.4);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f5f5f7;
+                --text-secondary: #a1a1a6;
+                --accent: linear-gradient(135deg, #8e9bff 0%, #5b66c4 100%);
+                --accent-solid: #9aa6ff;
+                --accent-glow: rgba(110, 122, 220, 0.5);
+
+                --glass-bg: rgba(48, 48, 56, 0.4);
+                --glass-border: rgba(255, 255, 255, 0.14);
+                --card-shadow: 0 12px 38px rgba(0, 0, 0, 0.55);
+                --rim-top: rgba(255, 255, 255, 0.24);
+                --rim-edge: rgba(255, 255, 255, 0.12);
+                --rim-bottom: rgba(150, 160, 255, 0.14);
+                --specular: rgba(255, 255, 255, 0.16);
+
+                --row-divider: rgba(255, 255, 255, 0.08);
+                --row-hover: rgba(255, 255, 255, 0.06);
+                --track-off: rgba(120, 120, 128, 0.45);
+                --switch-border: rgba(255, 255, 255, 0.1);
+                --control-bg: rgba(255, 255, 255, 0.1);
+
+                --body-bg: linear-gradient(165deg, #1b1d29 0%, #221f2e 60%, #17181f 100%);
+                --blob-1: rgba(110, 124, 220, 0.42);
+                --blob-2: rgba(158, 120, 226, 0.36);
+                --blob-3: rgba(96, 168, 214, 0.3);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            width: 300px;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-primary);
+            background: var(--body-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+                "Apple SD Gothic Neo", "맑은 고딕", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 뒤에서 비치는 컬러 라이트(유리 굴절감의 색 소스) */
+        body::before,
+        body::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(48px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 240px;
+            height: 240px;
+            top: -100px;
+            right: -80px;
+            background: radial-gradient(circle, var(--blob-1), transparent 70%);
+        }
+
+        body::after {
+            width: 220px;
+            height: 220px;
+            bottom: -95px;
+            left: -80px;
+            background: radial-gradient(circle, var(--blob-2), transparent 70%);
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 추가 컬러 라이트 */
+        .app::before {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            filter: blur(52px);
+            background: radial-gradient(circle, var(--blob-3), transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 15px 16px;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(108, 120, 205, 0.86), rgba(80, 90, 160, 0.86));
+            -webkit-backdrop-filter: blur(26px) saturate(190%);
+            backdrop-filter: blur(26px) saturate(190%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.34),
+                inset 0 -0.5px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .header img {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28), inset 0 0 0 0.5px rgba(255, 255, 255, 0.3);
+        }
+
+        .header .brand {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .header .name {
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.015em;
+        }
+
+        .header .version {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.72;
+            margin-top: 1px;
+        }
+
+        .card {
+            position: relative;
+            margin: 12px;
+            border-radius: 18px;
+            background: var(--glass-bg);
+            -webkit-backdrop-filter: blur(32px) saturate(185%) brightness(1.06);
+            backdrop-filter: blur(32px) saturate(185%) brightness(1.06);
+            box-shadow:
+                var(--card-shadow),
+                inset 0 1px 0.5px var(--rim-top),
+                inset 0 0 0 0.5px var(--rim-edge),
+                inset 0 -10px 22px -12px var(--rim-bottom);
+            overflow: hidden;
+        }
+
+        /* 상단 스펙큘러(유리 표면에 맺히는 빛) */
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 2;
+            background: linear-gradient(180deg,
+                    var(--specular) 0%,
+                    rgba(255, 255, 255, 0.08) 16%,
+                    rgba(255, 255, 255, 0) 36%);
+        }
+
+        .row {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 11px 14px;
+            border-bottom: 0.5px solid var(--row-divider);
+            transition: background 0.2s ease;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .row:hover {
+            background: var(--row-hover);
+        }
+
+        .label {
+            font-size: 13px;
+            letter-spacing: -0.01em;
+        }
+
+        .trailing {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #refreshtime {
+            font-family: inherit;
+            font-size: 12px;
+            color: var(--text-primary);
+            background: var(--control-bg);
+            border: 0.5px solid var(--switch-border);
+            border-radius: 8px;
+            padding: 3px 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 26px;
+            flex: none;
+        }
+
+        .switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
+            border-radius: 999px;
+            background: var(--track-off);
+            box-shadow:
+                inset 0 1px 2px rgba(0, 0, 0, 0.12),
+                inset 0 0 0 0.5px var(--switch-border);
+            transition: background 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
+        }
+
+        /* 볼록한 유리 노브(스펙큘러 하이라이트 포함) */
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            left: 2px;
+            top: 2px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 28%, #ffffff 0%, #f1f1f5 80%);
+            box-shadow:
+                0 1px 3px rgba(0, 0, 0, 0.32),
+                0 0 0 0.5px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0.5px rgba(255, 255, 255, 0.95);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:checked + .slider {
+            background: var(--accent);
+            box-shadow:
+                inset 0 1px 2px rgba(0, 0, 0, 0.16),
+                inset 0 0 0 0.5px rgba(255, 255, 255, 0.28),
+                0 0 14px var(--accent-glow);
+        }
+
+        input:checked + .slider::before {
+            transform: translateX(18px);
+        }
+
+        /* 차단 게시물 숨기기: 항상 켜짐(강제, 잠금) */
+        .slider.force {
+            background: var(--accent);
+            cursor: default;
+            opacity: 0.74;
+            box-shadow:
+                inset 0 1px 2px rgba(0, 0, 0, 0.16),
+                inset 0 0 0 0.5px rgba(255, 255, 255, 0.28);
+        }
+
+        .slider.force::before {
+            transform: translateX(18px);
+        }
+
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 16px 15px;
+            min-height: 30px;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+        }
+
+        /* 자동 저장 알림 토스트 */
+        #status {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--accent-solid);
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: var(--control-bg);
+            border: 0.5px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px) saturate(160%);
+            backdrop-filter: blur(10px) saturate(160%);
+            opacity: 0;
+            transform: translateY(2px) scale(0.96);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        #status.show {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* 차단 목록 버튼 */
+        .action-btn {
+            margin: 2px 12px 10px;
+            padding: 9px;
+            border: 0.5px solid var(--glass-border);
+            border-radius: 12px;
+            background: var(--glass-bg);
+            -webkit-backdrop-filter: blur(20px) saturate(1.6);
+            backdrop-filter: blur(20px) saturate(1.6);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--card-shadow), inset 0 1px 0 var(--glass-sheen);
+            transition: filter 0.15s ease, transform 0.12s ease;
+        }
+
+        .action-btn:hover {
+            filter: brightness(1.04);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 차단 목록 오버레이 */
+        .bl-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            background: var(--body-bg);
+        }
+
+        .bl-overlay[hidden] {
+            display: none;
+        }
+
+        .bl-header {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 13px 14px;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(108, 120, 205, 0.92), rgba(80, 90, 160, 0.92));
+            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            backdrop-filter: blur(20px) saturate(1.5);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .bl-back {
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.18);
+            border: none;
+            border-radius: 999px;
+            padding: 4px 11px;
+            cursor: pointer;
+        }
+
+        .bl-back:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .bl-title {
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .bl-body {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 380px;
+            padding: 10px 12px;
+        }
+
+        .bl-empty {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-align: center;
+            padding: 28px 10px;
+        }
+
+        .bl-section {
+            margin-bottom: 12px;
+        }
+
+        .bl-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-solid);
+            margin: 2px 2px 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bl-mobile {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: -2px 2px 6px;
+        }
+
+        .bl-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            border-radius: 9px;
+            background: var(--glass-bg);
+            border: 0.5px solid var(--glass-border);
+        }
+
+        .bl-type {
+            flex: none;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #7a86dd, #505aa0);
+        }
+
+        .bl-value {
+            flex: 1;
+            font-size: 12px;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bl-remove {
+            flex: none;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            color: #c0392b;
+            background: rgba(192, 57, 43, 0.12);
+            border: none;
+            border-radius: 999px;
+            padding: 3px 10px;
+            cursor: pointer;
+        }
+
+        .bl-remove:hover {
+            background: rgba(192, 57, 43, 0.2);
+        }
+
+        .bl-remove:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="header">
+            <img src="icon/icon_48.png" alt="DCInfo">
+            <span class="brand">
+                <span class="name">DCInfo</span>
+                <span class="version">v1.0.0</span>
+            </span>
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <span class="label">게시물 새 탭에서 열기</span>
+                <label class="switch">
+                    <input type="checkbox" id="newtab">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">향상된 게시글 목록</span>
+                <label class="switch">
+                    <input type="checkbox" id="pagination">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">차단 게시물 숨기기</span>
+                <label class="switch">
+                    <input type="checkbox" id="hideblock" disabled>
+                    <span class="slider force"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">통신사 IP 차단</span>
+                <label class="switch">
+                    <input type="checkbox" id="blockmobile">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">IP 정보 표시</span>
+                <label class="switch">
+                    <input type="checkbox" id="checkip">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">비고정닉 ID 표시</span>
+                <label class="switch">
+                    <input type="checkbox" id="nickid">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">기본 글꼴</span>
+                <label class="switch">
+                    <input type="checkbox" id="defaultfont">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <span class="label">자동 갱신</span>
+                <div class="trailing">
+                    <select id="refreshtime" style="display: none">
+                        <option value="3">3초</option>
+                        <option value="5">5초</option>
+                        <option value="10">10초</option>
+                    </select>
+                    <label class="switch">
+                        <input type="checkbox" id="refresh">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button id="blocklist_btn" class="action-btn">차단 목록 보기</button>
+
+        <div class="footer">
+            <span class="hint">변경 시 자동 저장</span>
+            <span id="status">✓ 저장됨</span>
+        </div>
+
+        <div id="blocklist_overlay" class="bl-overlay" hidden>
+            <div class="bl-header">
+                <button id="bl_back" class="bl-back">‹ 뒤로</button>
+                <span class="bl-title">차단 목록</span>
+            </div>
+            <div id="bl_body" class="bl-body"></div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
